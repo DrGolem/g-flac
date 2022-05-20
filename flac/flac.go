@@ -1,7 +1,7 @@
 package flac
 
 /*
-#cgo pkg-config: FLAC
+#cgo pkg-config: flac
 #include <FLAC/format.h>
 #include <FLAC/stream_decoder.h>
 #include <stdlib.h>
