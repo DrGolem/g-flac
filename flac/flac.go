@@ -63,7 +63,8 @@ func GetVersion() string {
 }
 
 type FlacDecoder struct {
-	decoder *C.FLAC__StreamDecoder
+	decoder  *C.FLAC__StreamDecoder
+	hDecoder cgo.Handle
 
 	rate                    int64
 	channels                int
@@ -93,12 +94,17 @@ func NewFlacFrameDecoder(maxOutputSampleBitDepth int) (*FlacDecoder, error) {
 		maxOutputSampleBitDepth: maxOutputSampleBitDepth,
 	}
 
+	hDecoder := cgo.NewHandle(&fd)
+	fd.hDecoder = hDecoder
+
 	return &fd, nil
 }
 
 func (d *FlacDecoder) Delete() error {
 
 	C.FLAC__stream_decoder_delete(d.decoder)
+
+	d.hDecoder.Delete()
 
 	return nil
 }
@@ -115,7 +121,8 @@ func decoderErrorCallback(d *C.FLAC__StreamDecoder, status C.FLAC__StreamDecoder
 //export decoderWriteCallback
 func decoderWriteCallback(decoder *C.FLAC__StreamDecoder, frame *C.FLAC__Frame, buffer **C.FLAC__int32, client_data unsafe.Pointer) C.FLAC__StreamDecoderWriteStatus {
 
-	dec := cgo.Handle(client_data).Value().(*FlacDecoder)
+	h := *(*cgo.Handle)(client_data)
+	dec := h.Value().(*FlacDecoder)
 
 	//fmt.Println("Frame header: %#v\n", frame.header)
 
@@ -156,10 +163,11 @@ func decoderWriteCallback(decoder *C.FLAC__StreamDecoder, frame *C.FLAC__Frame, 
 }
 
 //export decoderMetadataCallback
-func decoderMetadataCallback(d *C.FLAC__StreamDecoder, metadata *C.FLAC__StreamMetadata, data unsafe.Pointer) {
+func decoderMetadataCallback(d *C.FLAC__StreamDecoder, metadata *C.FLAC__StreamMetadata, client_data unsafe.Pointer) {
 	//fmt.Printf("metadata: %#v\n", metadata)
 
-	dec := cgo.Handle(data).Value().(*FlacDecoder)
+	h := *(*cgo.Handle)(client_data)
+	dec := h.Value().(*FlacDecoder)
 
 	if metadata._type == C.FLAC__METADATA_TYPE_STREAMINFO {
 		dec.channels = int(C.get_decoder_channels(metadata))
@@ -185,8 +193,6 @@ func (d *FlacDecoder) OpenFile(filePath string) error {
 	metadata_callback := C.FLAC__StreamDecoderMetadataCallback(unsafe.Pointer(C.decoderMetadataCallback_cgo))
 	error_callback := C.FLAC__StreamDecoderErrorCallback(unsafe.Pointer(C.decoderErrorCallback_cgo))
 
-	hDecoder := cgo.NewHandle(d)
-
 	decClean := FlacDecoder{}
 
 	d.rate = decClean.rate
@@ -202,7 +208,7 @@ func (d *FlacDecoder) OpenFile(filePath string) error {
 		write_callback,
 		metadata_callback,
 		error_callback,
-		unsafe.Pointer(hDecoder),
+		unsafe.Pointer(&d.hDecoder),
 	)
 
 	if status != C.FLAC__STREAM_DECODER_INIT_STATUS_OK {
