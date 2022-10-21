@@ -42,6 +42,8 @@ import (
 	"io"
 	"runtime/cgo"
 	"unsafe"
+
+	"github.com/drgolem/ringbuffer"
 )
 
 //type AudioFrameDecoder interface {
@@ -75,7 +77,7 @@ type FlacDecoder struct {
 	maxOutputSampleBitDepth int
 	streamBytesPerSample    int
 
-	ringBuffer RingBuffer
+	ringBuffer ringbuffer.RingBuffer
 	b16        [2]byte
 	b24        [3]byte
 }
@@ -90,7 +92,7 @@ func NewFlacFrameDecoder(maxOutputSampleBitDepth int) (*FlacDecoder, error) {
 
 	fd := FlacDecoder{
 		decoder:                 dec,
-		ringBuffer:              NewRingBuffer(ringBufferCapacity),
+		ringBuffer:              ringbuffer.NewRingBuffer(ringBufferCapacity),
 		maxOutputSampleBitDepth: maxOutputSampleBitDepth,
 	}
 

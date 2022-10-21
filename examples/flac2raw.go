@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/DrGolem/go-flac/flac"
+	"github.com/drgolem/go-flac/flac"
 )
 
 func main() {
