@@ -185,7 +185,7 @@ func decoderMetadataCallback(d *C.FLAC__StreamDecoder, metadata *C.FLAC__StreamM
 	}
 }
 
-func (d *FlacDecoder) OpenFile(filePath string) error {
+func (d *FlacDecoder) Open(filePath string) error {
 	filename := C.CString(filePath)
 	defer C.free(unsafe.Pointer(filename))
 
@@ -252,8 +252,8 @@ func (d *FlacDecoder) TellCurrentSample() int64 {
 	return d.currentSample
 }
 
-func (d *FlacDecoder) GetFormat() (int64, int, int) {
-	return d.rate, d.channels, d.bitsPerSample
+func (d *FlacDecoder) GetFormat() (int, int, int) {
+	return int(d.rate), d.channels, d.bitsPerSample
 }
 
 func (d *FlacDecoder) DecodeSamples(samples int, audio []byte) (int, error) {

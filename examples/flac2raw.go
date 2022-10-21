@@ -31,7 +31,7 @@ func main() {
 	}
 	defer dec.Delete()
 
-	err = dec.OpenFile(inFile)
+	err = dec.Open(inFile)
 	if err != nil {
 		fmt.Printf("ERR: %v\n", err)
 	}
