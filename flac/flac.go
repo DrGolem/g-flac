@@ -47,12 +47,12 @@ import (
 )
 
 //type AudioFrameDecoder interface {
-//	OpenFile(filePath string) error
+//	Open(filePath string) error
 //	Close() error
 //
 //	TotalSamples() int64
 //	TellCurrentSample() int64
-//	GetFormat() (rate int64, channels int, bitsPerSample int)
+//	GetFormat() (rate int, channels int, bitsPerSample int)
 //
 //	// Decodes audio samples, returns number of samples
 //	DecodeSamples(samples int, audio []byte) (int, error)
